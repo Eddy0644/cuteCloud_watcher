@@ -1,6 +1,6 @@
 const log4js = require('log4js');
-const logger_pattern = "[%d{hh:mm:ss.SSS}] %3.3c:[%5.5p] %m";
-const logger_pattern_console = "[%d{yy/MM/dd hh:mm:ss}] %[%3.3c:[%5.5p]%] %m";
+const logger_pattern = "[%d{hh:mm:ss.SSS} %5.5p] %m";
+const logger_pattern_console = "[%d{yy/MM/dd hh:mm:ss} %[%5.5p]%] %m";
 log4js.configure({
     appenders: {
         "console": {
@@ -40,6 +40,13 @@ log4js.configure({
                 pattern: "%-17.17X{nodeName},%m,Total %9.9X{usedTraffic1}MB, Diff %8.8X{increment1}MB. \t[RawData: total %-11.11X{usedTraffic2},diff %-11.11X{increment2}]",
             },
         },
+        "dataEntryCon": {
+            type: "console",
+            layout: {
+                type: "pattern",
+                pattern: "[%d{yy/MM/dd hh:mm:ss}  NODE] %17.17X{nodeName},Total %9.9X{usedTraffic1}MB, Diff %8.8X{increment1}MB."
+            },
+        },
         "debug_to_con": {
             type: "logLevelFilter",
             appender: "console",
@@ -49,7 +56,7 @@ log4js.configure({
     categories: {
         "default": {appenders: ["dateLog"], level: "debug"},
         "con": {appenders: ["console"], level: "debug"},
-        "dataEntry": {appenders: ["dataEntryCSV","dataEntryLog"], level: "debug"},
+        "dataEntry": {appenders: ["dataEntryCSV","dataEntryLog","dataEntryCon"], level: "debug"},
         "cy": {appenders: ["dateLog","debug_to_con"], level: "trace"},
     }
 })

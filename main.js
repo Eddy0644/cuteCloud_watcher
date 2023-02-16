@@ -138,11 +138,11 @@ async function sub_mergeAndSave(){
 
 }
 async function pullData_local(t_what){
-    console.log(`pullData_local initiated with ${t_what}`);
+    cyLogger.debug(`pullData_local initiated with ${t_what}`);
     await fetch(`http://127.0.0.1/${t_what}.json`).then(response=>response.json()).then(async response=>{await sub_processData(response,1)});
 }
 async function pullData(){
-    console.log(`pullData initiated.`);
+    cyLogger.debug(`pullData initiated.`);
     await fetch("https://www.cutecloud.net/user/ajax_data/chart/index_node_traffic", {
         method: 'GET',
         headers: {
