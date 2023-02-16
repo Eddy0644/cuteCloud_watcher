@@ -9,7 +9,7 @@ let traffic_db_stat={
     records:0,
     nodeRecords:{}
 };
-//TODO:-1 wrongly appeared when starting this without breeding.
+//TODO:add delimeters and time-lapse in logs.
 
 // No exiting when reach :EOF
 // alwaysSleep(1000);
