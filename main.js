@@ -109,9 +109,8 @@ function sub_mergeAndSave(){
         } // for (const nodeEntriesKey in nodeEntries)
     }
 
-    fs.writeFileSync("database.json",JSON.stringify(savedDB));
-    //---------------
-    //TODO:Save in CSV for processing manually using Excel.
+    fs.writeFileSync("database.json",JSON.stringify(savedDB,null,2));
+    //okTODO:Save in CSV for processing manually using Excel.
     const writeStream = fs.createWriteStream('dataLog.csv', { flags: 'a' ,encoding: 'utf8'});
     writeStream.write(toSaveInCSV+'\n');
     writeStream.end();
