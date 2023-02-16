@@ -38,25 +38,83 @@ function sub_processData(respJSON){
     // logger.debug(traffic_db);
     // console.log(response);
 }
+
+
+
+//Merge entries in mem-db, generate a general db for integrating into larger DB.
 function sub_mergeAndSave(){
-    //Merge entries in mem-db, generate a general db for integrating in larger DB.
-    // let db_for_save={};
+    //TODO:建一个json数据库用于保存一些信息
+    let savedDB=JSON.parse(fs.readFileSync("database.json").toString());
+    let toSaveInCSV="";
+    const convertToLocaleTime=(ts)=>{
+        // add 8 hours to let ISO time fits the china one.
+        let a=new Date(ts+28800*1000);
+        // return a.toDateString()+a.toTimeString().substring(0,9);
+        return a.toISOString().replace('T',' ').replace('Z','');
+    };
+    //start iterating over the array
     for (const nodeId in traffic_db) {
-        const nodeEntries=traffic_db[nodeId];
+        //nodeId is the key of outer circulation
+
+        //get a copy of node-in-db
+        let nodeEntries=traffic_db[nodeId];
+
+        //Circulate to delete duplicate items
         for(let nodeEntryID in nodeEntries){
             nodeEntryID=parseInt(nodeEntryID);
+
+            //The first entry of a node has nothing to compare, as of now
             if(nodeEntryID===0)continue;
+
+            //Delete an entry that have no changes since last entry
             if(nodeEntries[nodeEntryID].usedByte===nodeEntries[nodeEntryID-1].usedByte){
                 nodeEntries.splice(nodeEntryID,1);
-                // console.log(nodeEntries);
             }
         }
-        traffic_db[nodeId]=nodeEntries;//Save back into men-db!once forgot.
+        //Save back into mem-db
+        traffic_db[nodeId]=nodeEntries;
+
+        //Check in savedDB and merge into
+            //In savedDB I use node_name for index.
+            const nodeName=nodeEntries[0].name;
+        let createdNow=false;
+        if(!savedDB[nodeName]){
+            //this means a new node which didn't appear in former times.
+            //Start creating an entry in savedDB
+            savedDB[nodeName]=[];
+            createdNow=true;
+        }
+        let last_entry_in_savedDB=(!createdNow)?savedDB[nodeName][savedDB[nodeName].length-1]:{
+            usedByte:0,
+            ts2:nodeEntries[0].ts
+        };
+        for (const nodeEntriesKey in nodeEntries) {
+            const thisEntry=nodeEntries[nodeEntriesKey];
+            if(last_entry_in_savedDB.usedByte===thisEntry.usedByte){
+                //usedByte not change, not inserting
+                continue;
+            }
+            //Saving
+            const saveObj={
+                ts1:last_entry_in_savedDB.ts2,
+                usedByte:thisEntry.usedByte,
+                ts2:thisEntry.ts,
+                increment:(!createdNow)?thisEntry.usedByte-last_entry_in_savedDB.usedByte:-1
+            };
+            savedDB[nodeName].push(saveObj);
+
+            toSaveInCSV+=`${nodeName}\t\t,${convertToLocaleTime(saveObj.ts1)}, ${convertToLocaleTime(saveObj.ts2)}, ${saveObj.usedByte},${saveObj.increment}\n`;
+            //Refresh last_entry_in_savedDB
+            last_entry_in_savedDB=savedDB[nodeName][savedDB[nodeName].length-1];
+        } // for (const nodeEntriesKey in nodeEntries)
     }
-    //TODO:建一个数据库用于保存一些信息。还没想好
-    JSON.parse(fs.readFileSync("database.json"))
+
+    fs.writeFileSync("database.json",JSON.stringify(savedDB));
     //---------------
     //TODO:Save in CSV for processing manually using Excel.
+    const writeStream = fs.createWriteStream('dataLog.csv', { flags: 'a' ,encoding: 'utf8'});
+    writeStream.write(toSaveInCSV+'\n');
+    writeStream.end();
     // const savedInStreamCSV=``;
 }
 async function pullData_local(){
