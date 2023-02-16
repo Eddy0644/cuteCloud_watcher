@@ -54,7 +54,7 @@ log4js.configure({
     }
 })
 // module.exports=log4js.getLogger;
-module.exports = (param) => {
+module.exports = (/* maybe a param here for classification */) => {
     return {
         conLogger: log4js.getLogger("con"),
         cyLogger: log4js.getLogger("cy"),

@@ -1,9 +1,8 @@
 const fetch = require("node-fetch");
 const fs = require('fs');
-// const logger=require('./logger')().cyLogger;
 const {dataEntryLogger,cyLogger}=require('./logger')();
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const save_to_file_interval=10*60*1000  , poll_interval=5*1000;
+const save_to_file_interval=10*60*1000  , poll_interval=7*1000;
 let traffic_db={};
 let traffic_db_stat={
     initialTimestamp:Date.now(),
@@ -55,7 +54,6 @@ async function sub_processData(respJSON,is_local){
 async function sub_mergeAndSave(){
     //use json to store data
     let savedDB=JSON.parse(fs.readFileSync("database.json").toString());
-    let toSaveInCSV="";
     //TODO:Need to rewrite this function to make a better log
     const convertToLocaleTime=(ts)=>{
         // add 8 hours to let ISO time fits the china one.
@@ -161,7 +159,7 @@ pullData_local("ta").then(r=>{
             setTimeout(()=>{
                 setInterval(async()=>{
                     await pullData().then(sub_mergeAndSave);
-                },8000);
+                },poll_interval);
             },3000);
         })
     })
