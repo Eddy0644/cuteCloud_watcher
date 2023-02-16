@@ -13,21 +13,31 @@ log4js.configure({
         "dateLog": {
             type: "dateFile",
             filename: "logs/day",
-            pattern: "yy-MM-dd.log",
+            pattern: "yyMM-dd.log",
             alwaysIncludePattern: true,
             layout: {
                 type: "pattern",
                 pattern: logger_pattern
             },
         },
-        "dataEntryLog": {
+        "dataEntryCSV": {
             type: "dateFile",
             filename: "logs/dataLog",
-            pattern: "yy-MM-dd.csv",
+            pattern: "yyMM-dd.csv",
             alwaysIncludePattern: true,
             layout: {
                 type: "pattern",
-                pattern: "%-17.17X{nodeName},%m,%9.9X{usedTraffic}MB, %X{increment}",
+                pattern: "%-17.17X{nodeName},%m,%9.9X{usedTraffic1}MB,%8.8X{increment1}MB,%-11.11X{usedTraffic2},%-11.11X{increment2}",
+            },
+        },
+        "dataEntryLog": {
+            type: "dateFile",
+            filename: "logs/dataLog",
+            pattern: "yyMM-dd.log",
+            alwaysIncludePattern: true,
+            layout: {
+                type: "pattern",
+                pattern: "%-17.17X{nodeName},%m,Total %9.9X{usedTraffic1}MB, Diff %8.8X{increment1}MB. \t[RawData: total %-11.11X{usedTraffic2},diff %-11.11X{increment2}]",
             },
         },
         "debug_to_con": {
@@ -39,7 +49,7 @@ log4js.configure({
     categories: {
         "default": {appenders: ["dateLog"], level: "debug"},
         "con": {appenders: ["console"], level: "debug"},
-        "dataEntry": {appenders: ["dataEntryLog"], level: "debug"},
+        "dataEntry": {appenders: ["dataEntryCSV","dataEntryLog"], level: "debug"},
         "cy": {appenders: ["dateLog","debug_to_con"], level: "trace"},
     }
 })

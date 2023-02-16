@@ -22,7 +22,7 @@ let traffic_db_stat={
 async function sub_processData(respJSON,is_local){
     if(respJSON.ret !== 1)return false;
     const nowTimestamp=Date.now();
-    if(!is_local)cyLogger.trace(`Refreshed Data, ${JSON.stringify(respJSON.data)}`);
+    if(!is_local)cyLogger.trace(`Refreshed Data, ${JSON.stringify(respJSON)}`);
     for (const nodeIdStr in (respJSON.data)) {
         const nodeId=parseInt(nodeIdStr);
         const nodeData=respJSON.data[nodeId];
@@ -56,11 +56,13 @@ async function sub_mergeAndSave(){
     //use json to store data
     let savedDB=JSON.parse(fs.readFileSync("database.json").toString());
     let toSaveInCSV="";
+    //TODO:Need to rewrite this function to make a better log
     const convertToLocaleTime=(ts)=>{
         // add 8 hours to let ISO time fits the china one.
         let a=new Date(ts+28800*1000);
         // return a.toDateString()+a.toTimeString().substring(0,9);
-        return a.toISOString().replace('T',' ').replace('Z','');
+        let b=a.toISOString().replace('T',' ').replace('Z','').replace('2023-','23');
+        return b.substring(0,b.length-4);
     };
     //start iterating over the array
     for (const nodeId in traffic_db) {
@@ -116,8 +118,10 @@ async function sub_mergeAndSave(){
             // toSaveInCSV+=`${nodeName}\t\t,${convertToLocaleTime(saveObj.ts1)}, ${convertToLocaleTime(saveObj.ts2)}, ${saveObj.usedByte},${saveObj.increment}\n`;
             // dataEntryLogger.info(toSaveInCSV);
             dataEntryLogger.addContext("nodeName",nodeName.replace(" ",""));
-            dataEntryLogger.addContext("usedTraffic",(saveObj.usedByte/1024/1024).toFixed(3));
-            dataEntryLogger.addContext("increment",saveObj.increment);
+            dataEntryLogger.addContext("usedTraffic1",(saveObj.usedByte/1024/1024).toFixed(3).toString());
+            dataEntryLogger.addContext("increment1",(saveObj.increment!==-1)?(saveObj.increment/1024/1024).toFixed(3).toString():"-1");
+            dataEntryLogger.addContext("usedTraffic2",saveObj.usedByte.toString());
+            dataEntryLogger.addContext("increment2",(saveObj.increment!==-1)?saveObj.increment.toString():"-1");
 
             dataEntryLogger.info(`${convertToLocaleTime(saveObj.ts1)}, ${convertToLocaleTime(saveObj.ts2)}`);
             //Refresh last_entry_in_savedDB
