@@ -125,13 +125,15 @@ async function sub_mergeAndSave(){
             createdNow=false;
         } // for (const nodeEntriesKey in nodeEntries)
 
+        //Now cleaning up traffic_db to avoid duplicate entries in db and log.
+        nodeEntries.splice(0,nodeEntries.length-1);
+        //Write back to memory
+        traffic_db[nodeId]=nodeEntries;
     }
     fs.writeFileSync("database.json",JSON.stringify(savedDB,null,2));
     //okTODO:Save in CSV for processing manually using Excel.
-    // const writeStream = fs.createWriteStream('dataLog.csv', { flags: 'a' ,encoding: 'utf8'});
-    // writeStream.write(toSaveInCSV+'\n');
-    // writeStream.end();
-    // const savedInStreamCSV=``;
+
+
 }
 async function pullData_local(t_what){
     await fetch(`http://127.0.0.1/${t_what}.json`).then(response=>response.json()).then(async response=>{await sub_processData(response,1)});
