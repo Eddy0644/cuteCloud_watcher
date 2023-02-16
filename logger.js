@@ -40,7 +40,7 @@ log4js.configure({
         "default": {appenders: ["dateLog"], level: "debug"},
         "con": {appenders: ["console"], level: "debug"},
         "dataEntry": {appenders: ["dataEntryLog"], level: "debug"},
-        "cy": {appenders: ["dateLog","console"], level: "debug"},
+        "cy": {appenders: ["dateLog","debug_to_con"], level: "trace"},
     }
 })
 // module.exports=log4js.getLogger;

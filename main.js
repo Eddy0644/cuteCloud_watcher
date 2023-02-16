@@ -22,7 +22,7 @@ let traffic_db_stat={
 async function sub_processData(respJSON,is_local){
     if(respJSON.ret !== 1)return false;
     const nowTimestamp=Date.now();
-    if(!is_local)cyLogger.debug(`Refreshed Data, ${JSON.stringify(respJSON.data)}`);
+    if(!is_local)cyLogger.trace(`Refreshed Data, ${JSON.stringify(respJSON.data)}`);
     for (const nodeIdStr in (respJSON.data)) {
         const nodeId=parseInt(nodeIdStr);
         const nodeData=respJSON.data[nodeId];
@@ -136,9 +136,11 @@ async function sub_mergeAndSave(){
 
 }
 async function pullData_local(t_what){
+    console.log(`pullData_local initiated with ${t_what}`);
     await fetch(`http://127.0.0.1/${t_what}.json`).then(response=>response.json()).then(async response=>{await sub_processData(response,1)});
 }
 async function pullData(){
+    console.log(`pullData initiated.`);
     await fetch("https://www.cutecloud.net/user/ajax_data/chart/index_node_traffic", {
         method: 'GET',
         headers: {
@@ -147,10 +149,16 @@ async function pullData(){
         },
     }).then(response=>response.json()).then(async response=>{await sub_processData(response,0)});
 }
+
 pullData_local("ta").then(r=>{
     pullData_local("tb").then(sub_mergeAndSave).then(r=>{
-        delay(2000).then(r=>{
+        delay(500).then(r=>{
             pullData_local("tc").then(sub_mergeAndSave);
+            setTimeout(()=>{
+                setInterval(async()=>{
+                    await pullData().then(sub_mergeAndSave);
+                },8000);
+            },3000);
         })
     })
 });
