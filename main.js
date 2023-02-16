@@ -1,6 +1,7 @@
 const fetch = require("node-fetch");
 const fs = require('fs');
-const logger=require('./logger')().cyLogger;
+// const logger=require('./logger')().cyLogger;
+const {dataEntryLogger,cyLogger}=require('./logger')();
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const save_to_file_interval=10*60*1000  , poll_interval=5*1000;
 let traffic_db={};
@@ -103,17 +104,23 @@ function sub_mergeAndSave(){
             };
             savedDB[nodeName].push(saveObj);
 
-            toSaveInCSV+=`${nodeName}\t\t,${convertToLocaleTime(saveObj.ts1)}, ${convertToLocaleTime(saveObj.ts2)}, ${saveObj.usedByte},${saveObj.increment}\n`;
+            // toSaveInCSV+=`${nodeName}\t\t,${convertToLocaleTime(saveObj.ts1)}, ${convertToLocaleTime(saveObj.ts2)}, ${saveObj.usedByte},${saveObj.increment}\n`;
+            // dataEntryLogger.info(toSaveInCSV);
+            dataEntryLogger.addContext("nodeName",nodeName.replace(" ",""));
+            dataEntryLogger.addContext("usedTraffic",(saveObj.usedByte/1024/1024).toFixed(3));
+            dataEntryLogger.addContext("increment",saveObj.increment);
+
+            dataEntryLogger.info(`${convertToLocaleTime(saveObj.ts1)}, ${convertToLocaleTime(saveObj.ts2)}`);
             //Refresh last_entry_in_savedDB
             last_entry_in_savedDB=savedDB[nodeName][savedDB[nodeName].length-1];
         } // for (const nodeEntriesKey in nodeEntries)
-    }
 
+    }
     fs.writeFileSync("database.json",JSON.stringify(savedDB,null,2));
     //okTODO:Save in CSV for processing manually using Excel.
-    const writeStream = fs.createWriteStream('dataLog.csv', { flags: 'a' ,encoding: 'utf8'});
-    writeStream.write(toSaveInCSV+'\n');
-    writeStream.end();
+    // const writeStream = fs.createWriteStream('dataLog.csv', { flags: 'a' ,encoding: 'utf8'});
+    // writeStream.write(toSaveInCSV+'\n');
+    // writeStream.end();
     // const savedInStreamCSV=``;
 }
 async function pullData_local(){

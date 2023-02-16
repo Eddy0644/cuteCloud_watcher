@@ -20,6 +20,16 @@ log4js.configure({
                 pattern: logger_pattern
             },
         },
+        "dataEntryLog": {
+            type: "dateFile",
+            filename: "logs/dataLog",
+            pattern: "yy-MM-dd.csv",
+            alwaysIncludePattern: true,
+            layout: {
+                type: "pattern",
+                pattern: "%-17.17X{nodeName},%m,%9.9X{usedTraffic}MB, %X{increment}",
+            },
+        },
         "debug_to_con": {
             type: "logLevelFilter",
             appender: "console",
@@ -29,28 +39,15 @@ log4js.configure({
     categories: {
         "default": {appenders: ["dateLog"], level: "debug"},
         "con": {appenders: ["console"], level: "debug"},
+        "dataEntry": {appenders: ["dataEntryLog"], level: "debug"},
         "cy": {appenders: ["dateLog","console"], level: "debug"},
     }
 })
 // module.exports=log4js.getLogger;
 module.exports = (param) => {
-    if (param === "startup") log4js.getLogger("cy").debug(`Program Starting...
-  ______             __       __            _______              __     
- /      \\           |  \\  _  |  \\          |       \\            |  \\    
-|  $$$$$$\\ __    __ | $$ / \\ | $$ __    __ | $$$$$$$\\  ______  _| $$_   
-| $$   \\$$|  \\  |  \\| $$/  $\\| $$|  \\  /  \\| $$__/ $$ /      \\|   $$ \\  
-| $$      | $$  | $$| $$  $$$\\ $$ \\$$\\/  $$| $$    $$|  $$$$$$\\\\$$$$$$  
-| $$   __ | $$  | $$| $$ $$\\$$\\$$  >$$  $$ | $$$$$$$\\| $$  | $$ | $$ __ 
-| $$__/  \\| $$__/ $$| $$$$  \\$$$$ /  $$$$\\ | $$__/ $$| $$__/ $$ | $$|  \\
- \\$$    $$ \\$$    $$| $$$    \\$$$|  $$ \\$$\\| $$    $$ \\$$    $$  \\$$  $$
-  \\$$$$$$  _\\$$$$$$$ \\$$      \\$$ \\$$   \\$$ \\$$$$$$$   \\$$$$$$    \\$$$$ 
-          |  \\__| $$                                                    
-           \\$$    $$                                                    
-            \\$$$$$$                                                     
-`);
-    // else return log4js.getLogger(param);
-    else return {
+    return {
         conLogger: log4js.getLogger("con"),
         cyLogger: log4js.getLogger("cy"),
+        dataEntryLogger: log4js.getLogger("dataEntry"),
     }
 };
