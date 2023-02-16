@@ -19,7 +19,7 @@ let traffic_db_stat={
 //----------
 
 //以data子项的键名为索引
-function sub_processData(respJSON,is_local){
+async function sub_processData(respJSON,is_local){
     if(respJSON.ret !== 1)return false;
     const nowTimestamp=Date.now();
     if(!is_local)cyLogger.debug(`Refreshed Data, ${JSON.stringify(respJSON.data)}`);
@@ -43,7 +43,7 @@ function sub_processData(respJSON,is_local){
     }
     //Check if mem-db is full.If so, Write to file.
     if(nowTimestamp > traffic_db_stat.initialTimestamp + save_to_file_interval)
-        sub_mergeAndSave();
+        await sub_mergeAndSave();
 
     // logger.debug(traffic_db);
     // console.log(response);
@@ -52,7 +52,7 @@ function sub_processData(respJSON,is_local){
 
 
 //Merge entries in mem-db, generate a general db for integrating into larger DB.
-function sub_mergeAndSave(){
+async function sub_mergeAndSave(){
     //use json to store data
     let savedDB=JSON.parse(fs.readFileSync("database.json").toString());
     let toSaveInCSV="";
@@ -122,6 +122,7 @@ function sub_mergeAndSave(){
             dataEntryLogger.info(`${convertToLocaleTime(saveObj.ts1)}, ${convertToLocaleTime(saveObj.ts2)}`);
             //Refresh last_entry_in_savedDB
             last_entry_in_savedDB=savedDB[nodeName][savedDB[nodeName].length-1];
+            createdNow=false;
         } // for (const nodeEntriesKey in nodeEntries)
 
     }
@@ -132,11 +133,8 @@ function sub_mergeAndSave(){
     // writeStream.end();
     // const savedInStreamCSV=``;
 }
-async function pullData_local(){
-    await fetch("http://127.0.0.1/ta.json").then(response=>response.json()).then(response=>{sub_processData(response,1)});
-}
-async function pullData_local2(){
-    await fetch("http://127.0.0.1/tb.json").then(response=>response.json()).then(response=>{sub_processData(response,1)});
+async function pullData_local(t_what){
+    await fetch(`http://127.0.0.1/${t_what}.json`).then(response=>response.json()).then(async response=>{await sub_processData(response,1)});
 }
 async function pullData(){
     await fetch("https://www.cutecloud.net/user/ajax_data/chart/index_node_traffic", {
@@ -145,11 +143,13 @@ async function pullData(){
             'Content-Type': 'application/json',
             'Cookie':require("./secret.js").cookie
         },
-    }).then(response=>response.json()).then(response=>{sub_processData(response,0)});
+    }).then(response=>response.json()).then(async response=>{await sub_processData(response,0)});
 }
-pullData_local().then(r=>{
-    pullData().then(sub_mergeAndSave).then(r=>{
-        console.log(traffic_db);
+pullData_local("ta").then(r=>{
+    pullData_local("tb").then(sub_mergeAndSave).then(r=>{
+        delay(2000).then(r=>{
+            pullData_local("tc").then(sub_mergeAndSave);
+        })
     })
 });
 // setTimeout(cb=>{pullData().then(sub_mergeAndSave).then(r=>{
