@@ -9,6 +9,7 @@ let traffic_db_stat={
     records:0,
     nodeRecords:{}
 };
+//TODO:-1 wrongly appeared when starting this without breeding.
 
 // No exiting when reach :EOF
 // alwaysSleep(1000);
@@ -151,19 +152,24 @@ async function pullData(){
         },
     }).then(response=>response.json()).then(async response=>{await sub_processData(response,0)});
 }
-
-pullData_local("ta").then(r=>{
-    pullData_local("tb").then(sub_mergeAndSave).then(r=>{
-        delay(500).then(r=>{
-            pullData_local("tc").then(sub_mergeAndSave);
-            setTimeout(()=>{
-                setInterval(async()=>{
-                    await pullData().then(sub_mergeAndSave);
-                },poll_interval);
-            },3000);
-        })
-    })
-});
+//This is to breed data from some cached files.
+// pullData_local("ta").then(r=>{
+//     pullData_local("tb").then(sub_mergeAndSave).then(r=>{
+//         delay(500).then(r=>{
+//             pullData_local("tc").then(sub_mergeAndSave);
+//             setTimeout(()=>{
+//                 setInterval(async()=>{
+//                     await pullData().then(sub_mergeAndSave);
+//                 },poll_interval);
+//             },3000);
+//         })
+//     })
+// });
+setTimeout(()=>{
+    setInterval(async()=>{
+        await pullData().then(sub_mergeAndSave);
+    },poll_interval);
+},3000);
 // setTimeout(cb=>{pullData().then(sub_mergeAndSave).then(r=>{
 //     console.log(traffic_db);
 // });
