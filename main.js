@@ -1,5 +1,6 @@
 const fetch = require("node-fetch");
 const fs = require('fs');
+const logger=require('./logger')().cyLogger;
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const save_to_file_interval=10*60*1000  , poll_interval=5*1000;
 let traffic_db={};
@@ -33,7 +34,8 @@ function sub_processData(respJSON){
     //Check if mem-db is full.Write to file if so.
     if(nowTimestamp > traffic_db_stat.initialTimestamp + save_to_file_interval)
         sub_mergeAndSave();
-    console.log(traffic_db);
+
+    // logger.debug(traffic_db);
     // console.log(response);
 }
 function sub_mergeAndSave(){
@@ -46,13 +48,15 @@ function sub_mergeAndSave(){
             if(nodeEntryID===0)continue;
             if(nodeEntries[nodeEntryID].usedByte===nodeEntries[nodeEntryID-1].usedByte){
                 nodeEntries.splice(nodeEntryID,1);
-                console.log(nodeEntries);
+                // console.log(nodeEntries);
             }
         }
+        traffic_db[nodeId]=nodeEntries;//Save back into men-db!once forgot.
     }
     //TODO:建一个数据库用于保存一些信息。还没想好
-    // JSON.parse(fs.readFileSync())
+    JSON.parse(fs.readFileSync("database.json"))
     //---------------
+    //TODO:Save in CSV for processing manually using Excel.
     // const savedInStreamCSV=``;
 }
 async function pullData_local(){
@@ -72,10 +76,12 @@ async function pullData(){
     }).then(response=>response.json()).then(response=>{sub_processData(response)});
 }
 pullData_local().then(r=>{
-    console.log("-----------------------------------------------------");
-    console.log("-----------------------------------------------------");
+    // console.log("-----------------------------------------------------");
+    // console.log("-----------------------------------------------------");
 }).then(r=>{
-    pullData_local2().then(sub_mergeAndSave)
+    pullData_local2().then(sub_mergeAndSave).then(r=>{
+        console.log(traffic_db);
+    })
 });
 
 
