@@ -9,7 +9,10 @@ let traffic_db_stat={
     records:0,
     nodeRecords:{}
 };
-//TODO:add delimeters and time-lapse in logs.
+//TODO:add delimeters and time-lapse in logs;
+// add auto-login system to avoid cookie expire (after 1d appx.);
+// integrate TG Bot for notification.
+
 
 // No exiting when reach :EOF
 // alwaysSleep(1000);
