@@ -1,16 +1,38 @@
 const fetch = require("node-fetch");
-const fs = require('fs');
+const config = require('./secret');
+const TelegramBot = require('node-telegram-bot-api');
+const fs = require("fs");
 const {dataEntryLogger,cyLogger}=require('./logger')();
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const save_to_file_interval=10*60*1000  , poll_interval=7*1000;
-let traffic_db={};
-let traffic_db_stat={
-    initialTimestamp:Date.now(),
-    records:0,
-    nodeRecords:{}
+let traffic_db={},traffic_db_stat={initialTimestamp:Date.now(), records:0, nodeRecords:{}};
+
+const tgbot = new TelegramBot(config.TGToken,
+    {polling: true, request: {proxy: "http://127.0.0.1:10811",},});
+const tgBotSendMessage = async (msg, isSilent = false, parseMode) => {
+    /*Debug Only;no TG messages delivered*/
+    // return tgLogger.info(`Blocked Msg: ${msg}`);
+    await delay(100);
+    let form = {};
+    if (isSilent) form.disable_notification = true;
+    if (parseMode) form.parse_mode = parseMode;
+    await tgbot.sendMessage(config.My_TG_ID, msg, form).catch((e) => cyLogger.error(e));
 };
+tgbot.sendMessage2 = tgBotSendMessage;
+
+tgbot.on('message', (msg) => {
+    // noinspection JSUnresolvedVariable,JSIgnoredPromiseFromCall
+    tgbot.sendMessage(msg.chat.id, 'Received your message,' + msg.chat.id);
+    // noinspection JSUnresolvedVariable
+    cyLogger.debug(`I received a message from chatId ${msg.chat.id}`);
+});
+// {
+    tgbot.sendMessage(-1001765607580,'Service Startup...',{
+        message_thread_id:2
+    });
+// }
 //TODO:add delimeters and time-lapse in logs;
-// add auto-login system to avoid cookie expire (after 1d appx.);
+// add auto-login system to avoid cookie expire (after 1d appx.) and check-in system;
 // integrate TG Bot for notification.
 
 
@@ -151,7 +173,7 @@ async function pullData(){
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Cookie':require("./secret.js").cookie
+            'Cookie':config.cookie
         },
     }).then(response=>response.json()).then(async response=>{await sub_processData(response,0)});
 }
@@ -172,7 +194,7 @@ setTimeout(()=>{
     setInterval(async()=>{
         await pullData().then(sub_mergeAndSave);
     },poll_interval);
-},3000);
+},1000);
 // setTimeout(cb=>{pullData().then(sub_mergeAndSave).then(r=>{
 //     console.log(traffic_db);
 // });

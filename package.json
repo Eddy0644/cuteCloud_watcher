@@ -12,6 +12,7 @@
   "dependencies": {
     "log4js": "^6.7.1",
     "node-fetch": "^2.6.9",
+    "node-telegram-bot-api": "^0.61.0",
     "request": "^2.88.2"
   }
 }
