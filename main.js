@@ -27,9 +27,9 @@ tgbot.on('message', (msg) => {
     cyLogger.debug(`I received a message from chatId ${msg.chat.id}`);
 });
 // {
-    tgbot.sendMessage(-1001765607580,'Service Startup...',{
-        message_thread_id:2
-    });
+    tgbot.sendMessage(-1001765607580, 'Service Startup...', {
+        message_thread_id: 2
+    }).then(()=>{});
 // }
 //TODO:add delimiters and time-lapse in logs;
 // add auto-login system to avoid cookie expire (after 1d appx.) and check-in system;
