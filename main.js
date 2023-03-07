@@ -71,7 +71,6 @@ async function sub_processData(respJSON,is_local){
         await sub_mergeAndSave();
 
     // logger.debug(traffic_db);
-    // console.log(response);
 }
 
 
@@ -159,7 +158,6 @@ async function sub_mergeAndSave(){
         traffic_db[nodeId]=nodeEntries;
     }
     fs.writeFileSync("database.json",JSON.stringify(savedDB,null,2));
-    //okTODO:Save in CSV for processing manually using Excel.
 
 
 }
