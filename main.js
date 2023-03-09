@@ -7,6 +7,9 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const save_to_file_interval=10*60*1000  , poll_interval=7*1000;
 let traffic_db={},traffic_db_stat={initialTimestamp:Date.now(), records:0, nodeRecords:{}};
 
+/*
+* Temporary deprecated because of less demand
+* */
 const tgbot = new TelegramBot(config.TGToken,
     {polling: true, request: {proxy: "http://127.0.0.1:10811",},});
 const tgBotSendMessage = async (msg, isSilent = false, parseMode) => {
